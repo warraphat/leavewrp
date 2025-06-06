@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}ระบบจัดการการลา{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+  <div class="navbar-left">
+  <img src="{{ url_for('static', filename='images/school_logo.png') }}" alt="โลโก้โรงเรียน" style="height: 40px; vertical-align: middle; margin-right: 10px;">
+  <strong>ระบบจัดการการลา</strong>
+  </div>
+  <div class="navbar-right">
+    {% if session.get('username') %}
+      สวัสดี, {{ current_user.first_name or session['username'] }}
+      {% if session['username'] %}
+      <a href="{{ url_for('profile') }}" class="btn-blue">ข้อมูลส่วนตัว</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="logout-button">ออกจากระบบ</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">เข้าสู่ระบบ</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="layout-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3>📂 เมนูหลัก</h3>
+    <ul class="menu-list">
+      <li><a href="{{ url_for('home') }}">🏠 หน้าแรก</a></li>
+      <li><a href="{{ url_for('leave') }}">📝 ยื่นใบลา</a></li>
+      <li><a href="{{ url_for('report') }}">📋 ประวัติการลา</a></li>
+      {% if session.get('role') == 'admin' %}
+        <li><a href="{{ url_for('admin_dashboard') }}">⚙️ จัดการระบบ</a></li>
+        <li><a href="{{ url_for('admin_leaves') }}"> 🗂 อนุมัติใบลา
+          {% if pending_count > 0 %}
+            <span class="badge">{{ pending_count }}</span>
+          {% endif %}</a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-message">
+          {% for msg in messages %}
+            <div class="flash">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+</body>
+</html>

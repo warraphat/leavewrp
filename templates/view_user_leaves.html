@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}ข้อมูลการลาของ {{ user.first_name }}{% endblock %}
+
+{% block content %}
+<h2>📄 ประวัติการลาของ {{ user.prefix or '' }}{{ user.first_name }} {{ user.last_name }}</h2>
+
+<!-- ฟอร์มกรองช่วงเดือน -->
+<form method="get" class="filter-form" style="margin-bottom: 1em; display: flex; gap: 10px; align-items: center;">
+  <label for="start_month">ตั้งแต่เดือน:</label>
+  <input type="month" id="start_month" name="start_month" value="{{ request.args.get('start_month', '') }}">
+
+  <label for="end_month">ถึงเดือน:</label>
+  <input type="month" id="end_month" name="end_month" value="{{ request.args.get('end_month', '') }}">
+
+  <button type="submit" class="btn-blue">กรอง</button>
+  <a href="{{ url_for('export_user_leaves', user_id=user.id, start_month=request.args.get('start_month'), end_month=request.args.get('end_month')) }}" class="btn-blue">
+    ดาวน์โหลด Excel
+  </a>
+</form>
+
+<!-- ✅ สรุปจำนวนวันลา -->
+<!-- ✅ สรุปจำนวนวันลา -->
+<div class="summary-box">
+  <h3>📌 สรุปการลาของ {{ user.first_name }}</h3>
+  <ul>
+    <li>
+      ลาป่วย:
+      <span class="highlight 
+        {% if summary['ลาป่วย'] >= 10 %}danger
+        {% elif summary['ลาป่วย'] >= 6 %}warning
+        {% else %}normal{% endif %}">
+        {{ summary['ลาป่วย'] }}
+      </span> วัน
+    </li>
+    <li>
+      ลากิจ:
+      <span class="highlight 
+        {% if summary['ลากิจ'] >= 10 %}danger
+        {% elif summary['ลากิจ'] >= 6 %}warning
+        {% else %}normal{% endif %}">
+        {{ summary['ลากิจ'] }}
+      </span> วัน
+    </li>
+    <li>
+      ลาย่อย:
+      <span class="highlight 
+        {% if summary['ลาย่อย'] >= 10 %}danger
+        {% elif summary['ลาย่อย'] >= 6 %}warning
+        {% else %}normal{% endif %}">
+        {{ "%.1f"|format(summary['ลาย่อย']) }}
+      </span> ชั่วโมง
+    </li>
+  </ul>
+</div>
+
+<!-- ✅ ตารางใบลา -->
+<table class="leave-table" border="1" cellpadding="8" cellspacing="0" style="margin-top: 1em; width: 100%; border-collapse: collapse;">
+  <thead style="background: #f0f0f0;">
+    <tr>
+      <th>วันที่เริ่ม</th>
+      <th>วันที่สิ้นสุด</th>
+      <th>ประเภทการลา</th>
+      <th>จำนวนวัน</th>
+      <th>เหตุผล</th>
+      <th>จำนวนชั่วโมง</th>
+      <th>เวลา (จาก - ถึง)</th>
+      <th>สถานะ</th>
+      <th>🗑 ลบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for leave in leaves %}
+    <tr>
+      <td>
+        {% if leave.start_date %}
+          {{ leave.start_date.strftime('%d %b %Y') }}
+        {% elif leave.date %}
+          {{ leave.date.strftime('%d %b %Y') }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        {% if leave.end_date %}
+          {{ leave.end_date.strftime('%d %b %Y') }}
+        {% elif leave.date %}
+          {{ leave.date.strftime('%d %b %Y') }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>{{ leave.leave_type }}</td>
+      <td>{{ leave.days }} วัน</td>
+      <td>{{ leave.reason }}</td>
+      <td>
+        {% if leave.leave_type == 'ลาย่อย' %}
+          {{ leave.hours or '-' }} ชม.
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        {% if leave.leave_type == 'ลาย่อย' %}
+          {{ leave.time_from or '-' }} - {{ leave.time_to or '-' }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td class="status-{{ leave.status }}">{{ leave.status }}</td>
+      <td>
+        <form method="POST" action="{{ url_for('delete_leave', leave_id=leave.id) }}"
+          onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบใบลานี้?');">
+          <button type="submit" class="btn-red">🗑</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="8" style="text-align: center;">ไม่พบข้อมูลการลาในช่วงที่เลือก</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<h3>📎 บันทึกการพูดคุย/ตักเตือน</h3>
+
+<ul>
+  {% for note in user.notes %}
+    <li>
+      📄 <a href="{{ url_for('static', filename=note.filepath) }}" target="_blank">{{ note.filename }}</a>
+      <small>อัปโหลดเมื่อ {{ note.uploaded_at.strftime('%d/%m/%Y') }}</small>
+      <form method="POST" action="{{ url_for('delete_user_note', note_id=note.id) }}" style="display:inline;">
+        <button class="btn-red" onclick="return confirm('ลบบันทึกนี้?')">ลบ</button>
+      </form>
+    </li>
+  {% else %}
+    <li><em>ยังไม่มีบันทึก</em></li>
+  {% endfor %}
+</ul>
+
+<!-- ฟอร์มแนบไฟล์ -->
+<form method="POST" action="{{ url_for('upload_user_note', user_id=user.id) }}" enctype="multipart/form-data">
+  <input type="file" name="file" required>
+  <button type="submit" class="btn-blue">📎 แนบไฟล์</button>
+</form>
+<br>
+<a href="{{ url_for('admin_dashboard') }}" class="btn-blue">← กลับ</a>
+
+<style>
+  .summary-box {
+    background-color: #f9f9f9;
+    padding: 12px 16px;
+    border-left: 6px solid #007BFF;
+    border-radius: 8px;
+    margin-top: 1em;
+  }
+  .summary-box h3 {
+    margin-top: 0;
+  }
+  .summary-box ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .summary-box li {
+    margin-bottom: 4px;
+  }
+  .status-อนุมัติ {
+    color: green;
+    font-weight: bold;
+  }
+  .status-รออนุมัติ {
+    color: orange;
+    font-weight: bold;
+  }
+  .status-ไม่อนุมัติ {
+    color: red;
+    font-weight: bold;
+  }
+
+  .btn-red {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .btn-red:hover {
+    background-color: #a71d2a;
+  }
+</style>
+{% endblock %}

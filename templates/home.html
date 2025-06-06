@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}หน้าแรก{% endblock %}
+{% block content %}
+<h2 class="dashboard-title">📊 แดชบอร์ด</h2>
+
+<div class="summary-container">
+  <div class="summary-box info">
+    <h4>📌 การลาล่าสุด</h4>
+    {% if latest_leave %}
+      <p>{{ latest_leave.leave_type }}<br>
+      {% if latest_leave.date %}
+        {{ latest_leave.date.strftime('%d/%m/%Y') }}
+      {% elif latest_leave.start_date and latest_leave.end_date %}
+        {{ latest_leave.start_date.strftime('%d/%m/%Y') }} - {{ latest_leave.end_date.strftime('%d/%m/%Y') }}
+      {% endif %}
+      </p>
+    {% else %}
+      <p>ไม่มีข้อมูล</p>
+    {% endif %}
+  </div>
+  <div class="summary-box success">
+    <h4>📄 การลาที่ส่งแล้ว</h4>
+    <p>{{ approved_count }} ครั้ง<br><span class="subtext">ทั้งหมด</span></p>
+  </div>
+  <div class="summary-box warning">
+    <h4>⏳ รออนุมัติ</h4>
+    <p>{{ pending_leaves|length }} ครั้ง<br><span class="subtext">ตามเหตุผล</span></p>
+  </div>
+</div>
+
+<div class="table-card">
+  <h3>🕒 ประวัติการลาล่าสุด</h3>
+  <table class="leave-table">
+    <thead>
+      <tr>
+        <th>ประเภทการลา</th>
+        <th>วันที่ลา</th>
+        <th>จำนวนวัน</th>
+        <th>สถานะ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for leave in leaves %}
+        <tr>
+          <td>{{ leave.leave_type }}</td>
+          <td>
+            {% if leave.date %}
+              {{ leave.date.strftime('%d/%m/%Y') }}
+            {% elif leave.start_date and leave.end_date %}
+              {{ leave.start_date.strftime('%d/%m/%Y') }} - {{ leave.end_date.strftime('%d/%m/%Y') }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if leave.date %}
+              1
+            {% elif leave.start_date and leave.end_date %}
+              {{ (leave.end_date - leave.start_date).days + 1 }}
+            {% else %}
+              -
+            {% endif %} วัน
+          </td>
+          <td class="status {{ leave.status }}">
+            {{ leave.status or 'รออนุมัติ' }}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="no-data">ยังไม่มีประวัติการลา</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .dashboard-title {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .summary-box {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 10px;
+    background: #f5f7fa;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+
+  .summary-box h4 {
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .summary-box.info {
+    border-left: 5px solid #17a2b8;
+  }
+
+  .summary-box.success {
+    border-left: 5px solid #28a745;
+  }
+
+  .summary-box.warning {
+    border-left: 5px solid #ffc107;
+  }
+
+  .summary-box .subtext {
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .table-card {
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+  }
+
+  .table-card h3 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: #333;
+  }
+
+  .leave-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .leave-table th, .leave-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e1e1e1;
+    text-align: center;
+  }
+
+  .leave-table th {
+    background: #f0f2f5;
+    font-weight: bold;
+  }
+
+  .status {
+    font-weight: bold;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+  }
+
+  .status.อนุมัติแล้ว {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .status.รออนุมัติ {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .status.ไม่อนุมัติ {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  .no-data {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+  }
+</style>
+{% endblock %}

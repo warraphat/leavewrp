@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}ข้อมูลส่วนตัว{% endblock %}
+
+{% block content %}
+<h2>👤 ข้อมูลส่วนตัว</h2>
+
+<form method="POST" class="profile-form" style="max-width: 500px; margin: 0 auto;">
+  <div class="form-group">
+    <label for="prefix">คำนำหน้า:</label>
+    <select id="prefix" name="prefix" required>
+      <option value="">-- เลือก --</option>
+      <option value="นาย" {% if user.prefix == 'นาย' %}selected{% endif %}>นาย</option>
+      <option value="นางสาว" {% if user.prefix == 'นางสาว' %}selected{% endif %}>นางสาว</option>
+      <option value="นาง" {% if user.prefix == 'นาง' %}selected{% endif %}>นาง</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="first_name">ชื่อ:</label>
+    <input type="text" id="first_name" name="first_name" value="{{ user.first_name or '' }}" required>
+  </div>
+
+  <div class="form-group">
+    <label for="last_name">นามสกุล:</label>
+    <input type="text" id="last_name" name="last_name" value="{{ user.last_name or '' }}" required>
+  </div>
+
+  <div class="form-group">
+    <label for="position">ตำแหน่ง:</label>
+    <input type="text" id="position" name="position" value="{{ user.position or '' }}" required>
+  </div>
+
+  <div class="form-group">
+    <label for="department">แผนก/ฝ่าย:</label>
+    <input type="text" id="department" name="department" value="{{ user.department or '' }}" required>
+  </div>
+
+  <button type="submit" class="btn-blue" style="width: 100%;">💾 บันทึกข้อมูล</button>
+</form>
+
+<style>
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .btn-blue {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .btn-blue:hover {
+    background-color: #0056b3;
+  }
+</style>
+{% endblock %}

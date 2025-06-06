@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📥 อัปโหลดรายชื่อผู้ใช้จาก Excel</h2>
+<form method="POST" enctype="multipart/form-data">
+  <input type="file" name="excel_file" accept=".xlsx" required>
+  <button type="submit" class="btn-blue">นำเข้า</button>
+</form>
+<p>📌 ไฟล์ต้องประกอบด้วยคอลัมน์: username, password, prefix, first_name, last_name, position, department, role</p>
+{% endblock %}

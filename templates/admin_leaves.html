@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}📋 รายการใบลาทั้งหมด{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 1rem;">📋 รายการใบลาทั้งหมด</h2>
+
+<div class="table-wrapper">
+  <table class="leave-table">
+    <thead>
+      <tr>
+        <th>👤 ชื่อผู้ใช้</th>
+        <th>🏢 แผนก</th>
+        <th>📁 ประเภท</th>
+        <th>📅 วันที่ลา</th>
+        <th>📏 จำนวนวัน</th>
+        <th>⏱ ชั่วโมง</th>
+        <th>🕒 เวลา</th>
+        <th>✍️ เหตุผล</th>
+        <th>📌 สถานะ</th>
+        <th>⚙️ ดำเนินการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for leave in leaves %}
+      <tr>
+        <td>{{ leave.user.prefix or '' }}{{ leave.user.first_name }} {{ leave.user.last_name }}</td>
+        <td>{{ leave.user.department or '-' }}</td>
+        <td>{{ leave.leave_type }}</td>
+        <td>
+          {% if leave.leave_type == 'ลาย่อย' %}
+            {{ leave.date.strftime('%d/%m/%Y') if leave.date else '-' }}
+          {% else %}
+            {{ leave.start_date.strftime('%d/%m/%Y') }} - {{ leave.end_date.strftime('%d/%m/%Y') }}
+          {% endif %}
+        </td>
+        <td>
+          {% if leave.leave_type == 'ลาย่อย' %}
+            1
+          {% elif leave.start_date and leave.end_date %}
+            {{ (leave.end_date - leave.start_date).days + 1 }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if leave.leave_type == 'ลาย่อย' %}
+            {{ leave.hours or '-' }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if leave.leave_type == 'ลาย่อย' %}
+            {{ leave.time_from or '-' }} - {{ leave.time_to or '-' }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>{{ leave.reason }}</td>
+        <td>
+          {% if leave.status == 'รออนุมัติ' %}
+            <span class="badge pending">รออนุมัติ</span>
+          {% elif leave.status == 'อนุมัติ' %}
+            <span class="badge approved">อนุมัติแล้ว</span>
+          {% else %}
+            <span class="badge rejected">ไม่อนุมัติ</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if leave.status == 'รออนุมัติ' %}
+            <form method="POST" action="{{ url_for('approve_leave', leave_id=leave.id) }}" style="display:inline;">
+              <button class="btn-green" type="submit">✅</button>
+            </form>
+            <form method="POST" action="{{ url_for('reject_leave', leave_id=leave.id) }}" style="display:inline;">
+              <button class="btn-red" type="submit">❌</button>
+            </form>
+          {% else %}
+            <span style="color: #888;">-</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ✅ CSS -->
+<style>
+  .table-wrapper {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    overflow-x: auto;
+  }
+
+  .leave-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 0.95rem;
+  }
+
+  .leave-table th, .leave-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eaeaea;
+    text-align: center;
+  }
+
+  .leave-table thead th {
+    background-color: #f5f7fa;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .leave-table tbody tr:nth-child(even) {
+    background-color: #f9fbfc;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 0.9em;
+  }
+
+  .badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .badge.approved {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .badge.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+  .btn-green, .btn-red {
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+
+  .btn-green {
+    background-color: #28a745;
+    color: white;
+  }
+
+  .btn-green:hover {
+    background-color: #218838;
+  }
+
+  .btn-red {
+    background-color: #dc3545;
+    color: white;
+  }
+
+  .btn-red:hover {
+    background-color: #c82333;
+  }
+</style>
+{% endblock %}

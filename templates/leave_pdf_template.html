@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: "TH Sarabun New", sans-serif; font-size: 16pt; line-height: 1.5; }
+        .center { text-align: center; }
+        .section { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="center"><h2>แบบฟอร์มการลาของโรงเรียน</h2></div>
+    <div class="section">ชื่อ - สกุล: {{ user.first_name }} {{ user.last_name }}</div>
+    <div class="section">ประเภทการลา: {{ leave.leave_type }}</div>
+    <div class="section">วันที่ลา:
+        {% if leave.leave_type == 'ลาย่อย' and leave.date %}
+            {{ leave.date.strftime('%d/%m/%Y') }}
+        {% elif leave.start_date and leave.end_date %}
+            {{ leave.start_date.strftime('%d/%m/%Y') }} - {{ leave.end_date.strftime('%d/%m/%Y') }}
+        {% endif %}
+    </div>
+    <div class="section">เหตุผล: {{ leave.reason }}</div>
+    <div class="section">วันที่ยื่นใบลา: {{ leave.submitted_at.strftime('%d/%m/%Y') }}</div>
+    <div class="section">ลงชื่อ....................................(ผู้ลา)</div>
+</body>
+</html>

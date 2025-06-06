@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>บันทึกการลา</title>
+</head>
+<body>
+    <h2>แบบฟอร์มลาพักงาน</h2>
+    <form method="post">
+        ประเภทการลา:
+        <select name="leave_type">
+            <option value="ลากิจ">ลากิจ</option>
+            <option value="ลาป่วย">ลาป่วย</option>
+            <option value="ลาพักร้อน">ลาย่อย</option>
+        </select><br><br>
+        วันที่เริ่ม: <input type="date" name="start_date" required><br><br>
+        วันที่สิ้นสุด: <input type="date" name="end_date" required><br><br>
+        เหตุผล: <br><textarea name="reason"></textarea><br><br>
+        <input type="submit" value="บันทึก">
+    </form>
+    <br><a href="/report">ดูรายงาน</a> | <a href="/export">ดาวน์โหลด Excel</a> | <a href="/logout">ออกจากระบบ</a>
+</body>
+</html>

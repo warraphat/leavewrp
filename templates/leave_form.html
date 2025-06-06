@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}ยื่นใบลา - ระบบจัดการการลา{% endblock %}
+
+{% block content %}
+<h2 class="form-title">📝 ยื่นใบลา</h2>
+
+<form method="post" class="leave-form" onsubmit="return validateForm()">
+  <div class="form-group">
+    <label for="leave_type">ประเภทการลา:</label>
+    <select name="leave_type" id="leave_type" onchange="toggleFields()" required>
+      <option value="">-- กรุณาเลือก --</option>
+      <option value="ลากิจ">ลากิจ</option>
+      <option value="ลาป่วย">ลาป่วย</option>
+      <option value="ลาย่อย">ลาย่อย</option>
+    </select>
+  </div>
+
+  <!-- ฟิลด์สำหรับลากิจ ลาป่วย: วันที่เริ่มต้นและสิ้นสุด -->
+  <div id="full_day_fields" style="display:none;">
+    <div class="form-group">
+      <label for="start_date">วันที่เริ่มลา:</label>
+      <input type="date" name="start_date" id="start_date">
+    </div>
+    <div class="form-group">
+      <label for="end_date">วันที่สิ้นสุดลา:</label>
+      <input type="date" name="end_date" id="end_date">
+    </div>
+  </div>
+
+  <!-- ฟิลด์สำหรับลาย่อย -->
+  <div id="partial_fields" style="display: none;">
+    <div class="form-group">
+      <label for="date">วันที่ลา:</label>
+      <input type="date" name="date" id="date">
+    </div>
+    <div class="form-group">
+      <label for="hours">จำนวนชั่วโมง:</label>
+      <input type="number" step="0.5" name="hours" id="hours" placeholder="เช่น 1.5">
+    </div>
+
+    <div class="form-group">
+      <label>เวลา (จาก - ถึง):</label>
+      <div class="time-range">
+        <input type="time" name="time_from"> - <input type="time" name="time_to">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="reason">เหตุผล:</label>
+    <textarea name="reason" id="reason" rows="3" placeholder="ระบุเหตุผล..." required></textarea>
+  </div>
+  <div class="form-group">
+    <label for="contact_info">ระหว่างการลาติดต่อได้ที่:</label>
+    <textarea name="contact_info" id="contact_info" rows="2" placeholder="เช่น เบอร์โทร หรืออีเมล" required></textarea>
+  </div>
+
+  <button type="submit" class="submit-btn">✅ ส่งใบลา</button>
+</form>
+
+<script>
+function toggleFields() {
+  const leaveType = document.getElementById('leave_type').value;
+
+  if (leaveType === 'ลาย่อย') {
+    document.getElementById('partial_fields').style.display = 'block';
+    document.getElementById('full_day_fields').style.display = 'none';
+
+    document.getElementById('hours').required = true;
+    document.getElementById('date').required = true;
+
+    document.getElementById('start_date').required = false;
+    document.getElementById('end_date').required = false;
+  } else if (leaveType === 'ลากิจ' || leaveType === 'ลาป่วย') {
+    document.getElementById('partial_fields').style.display = 'none';
+    document.getElementById('full_day_fields').style.display = 'block';
+
+    document.getElementById('hours').required = false;
+    document.getElementById('date').required = false;
+
+    document.getElementById('start_date').required = true;
+    document.getElementById('end_date').required = true;
+  } else {
+    document.getElementById('partial_fields').style.display = 'none';
+    document.getElementById('full_day_fields').style.display = 'none';
+
+    document.getElementById('hours').required = false;
+    document.getElementById('date').required = false;
+    document.getElementById('start_date').required = false;
+    document.getElementById('end_date').required = false;
+  }
+}
+
+function validateForm() {
+  const leaveType = document.getElementById('leave_type').value;
+
+  if (leaveType === 'ลากิจ' || leaveType === 'ลาป่วย') {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+
+    if (!startDate || !endDate) {
+      alert('กรุณาระบุวันที่เริ่มต้นและวันที่สิ้นสุดของการลา');
+      return false;
+    }
+    if (startDate > endDate) {
+      alert('วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่มต้น');
+      return false;
+    }
+  }
+
+  if (leaveType === 'ลาย่อย') {
+    const date = document.getElementById('date').value;
+    const hours = document.getElementById('hours').value;
+
+    if (!date) {
+      alert('กรุณาระบุวันที่ลาสำหรับลาย่อย');
+      return false;
+    }
+    if (!hours || hours <= 0) {
+      alert('กรุณาระบุจำนวนชั่วโมงที่ถูกต้องสำหรับลาย่อย');
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// เรียกตอนโหลดหน้า เพื่อแสดงฟิลด์ตามค่าเริ่มต้น
+document.addEventListener('DOMContentLoaded', toggleFields);
+</script>
+{% endblock %}

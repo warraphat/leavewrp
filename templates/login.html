@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ระบบการลาโรงเรียนวรพัฒน์</title>
+  <style>
+    body {
+      background: #f0f4f8;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      background: white;
+      padding: 2.5rem 3rem;
+      border-radius: 10px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      width: 420px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    input[type="text"], input[type="password"] {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border-color: #007BFF;
+      outline: none;
+    }
+    input[type="submit"] {
+      background: #007BFF;
+      color: white;
+      font-weight: 600;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    input[type="submit"]:hover {
+      background: #0056b3;
+    }
+    p {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    a {
+      color: #007BFF;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+  <!-- โลโก้โรงเรียน -->
+  <img src="{{ url_for('static', filename='images/school_logo.png') }}" alt="โลโก้โรงเรียนวรพัฒน์" class="school-logo" />
+
+  <h2>เข้าสู่ระบบการลาโรงเรียนวรพัฒน์</h2>
+
+  <form method="post">
+    <input type="text" name="username" placeholder="ชื่อผู้ใช้" required />
+    <input type="password" name="password" placeholder="รหัสผ่าน" required />
+    <input type="submit" value="เข้าสู่ระบบ" />
+  </form>
+
+  <p>ยังไม่มีบัญชี? <a href="{{ url_for('register') }}">สมัครสมาชิกที่นี่</a></p>
+  </div>
+</body>
+</html>

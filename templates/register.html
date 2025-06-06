@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>สมัครสมาชิก</title></head>
+<body>
+  <h2>สมัครสมาชิก</h2>
+  <form method="post">
+    Username: <input type="text" name="username" required><br>
+    Password: <input type="password" name="password" required><br>
+    <input type="submit" value="สมัคร">
+  </form>
+  <p>มีบัญชีแล้ว? <a href="{{ url_for('login') }}">เข้าสู่ระบบ</a></p>
+</body>
+</html>

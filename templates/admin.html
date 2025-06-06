@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}จัดการระบบ - ระบบจัดการการลา{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 10px;">⚙️ หน้าจัดการระบบ (Admin Dashboard)</h2>
+
+<h3 style="margin-top: 20px;">👥 จัดการผู้ใช้</h3>
+
+<!-- ฟอร์มค้นหา -->
+<form method="GET" action="{{ url_for('admin_search') }}" class="search-form">
+  <input type="text" name="q" placeholder="🔍 ค้นหาชื่อผู้ใช้..." required>
+  <button type="submit" class="btn-blue">ค้นหา</button>
+</form>
+
+<!-- ปุ่มนำเข้าผู้ใช้จาก Excel -->
+<div style="margin-bottom: 15px; display: flex; gap: 10px;">
+  <a href="{{ url_for('import_users') }}" class="btn-blue">📥 นำเข้าผู้ใช้จาก Excel</a>
+  <a href="{{ url_for('download_user_template') }}" class="btn-blue" download>📄 ดาวน์โหลดเทมเพลต Excel</a>
+</div>
+<!-- ตารางผู้ใช้ -->
+<div class="table-container">
+  <table class="user-table">
+    <thead>
+  <tr>
+    <th>ลำดับ</th>
+    <th>ชื่อผู้ใช้</th>
+    <th>แผนก</th>  <!-- เปลี่ยนชื่อหัวตาราง -->
+    <th>จัดการรหัสผ่าน</th>
+    <th>การจัดการบทบาท</th>
+    <th>ข้อมูลการลา</th>
+  </tr>
+</thead>
+<tbody>
+  {% for user in users %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ user.prefix or '' }} {{ user.first_name or '-' }} {{ user.last_name or '' }}</td>
+    <td>{{ user.department or '-' }}</td>  <!-- แสดงแผนกแทนบทบาท -->
+
+    <!-- รหัสผ่าน -->
+    <td>
+      {% if user.username != session['username'] %}
+      <form method="POST" action="{{ url_for('change_password', user_id=user.id) }}" class="inline-form">
+        <input type="text" name="new_password" placeholder="รหัสผ่านใหม่" required>
+        <button type="submit" class="btn-blue">เปลี่ยน</button>
+      </form>
+      {% else %}
+        <span class="text-muted">(คุณเอง)</span>
+      {% endif %}
+    </td>
+
+    <!-- บทบาท (ยังคงไว้ให้แก้ไขบทบาทได้ตามเดิม) -->
+    <td>
+      {% if user.username != session['username'] %}
+      <form method="POST" action="{{ url_for('change_role', user_id=user.id) }}" class="inline-form">
+        <select name="role" required>
+          <option value="staff" {% if user.role == 'staff' %}selected{% endif %}>บุคลากร</option>
+          <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>แอดมิน</option>
+        </select>
+        <button type="submit" class="btn-blue">เปลี่ยน</button>
+      </form>
+      {% else %}
+        <span class="text-muted">(คุณเอง)</span>
+      {% endif %}
+    </td>
+
+    <!-- ลิงก์ดูข้อมูลการลา -->
+    <td>
+      <a href="{{ url_for('view_user_leaves', user_id=user.id) }}" class="btn-blue">📄 ประวัติการลา</a>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
+  </table>
+</div>
+
+<style>
+  .search-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .user-table thead {
+    background-color: #f2f2f2;
+  }
+
+  .user-table th,
+  .user-table td {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+
+  .user-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .inline-form {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .inline-form input[type="text"],
+  .inline-form select {
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    width: 120px;
+  }
+
+  .btn-blue {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .btn-blue:hover {
+    background-color: #0056b3;
+  }
+
+  .text-muted {
+    color: #888;
+    font-style: italic;
+  }
+</style>
+{% endblock %}

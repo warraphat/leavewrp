@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% block title %}📋 รายงานการลา{% endblock %}
+
+{% block content %}
+<h2 class="report-title">📋 รายงานการลา</h2>
+
+<!-- 🔍 Filter -->
+<div class="filter-box">
+  <form method="get" action="{{ url_for('report') }}" class="filter-form">
+    <label>📅 เริ่มวันที่:
+      <input type="date" name="start_date" value="{{ start_date }}">
+    </label>
+    <label>📅 ถึงวันที่:
+      <input type="date" name="end_date" value="{{ end_date }}">
+    </label>
+    <button type="submit" class="btn-blue">🔍 กรอง</button>
+  </form>
+</div>
+
+<!-- 📊 Summary -->
+<div class="summary-box">
+  <h3>📌 สรุปจำนวนวันลา</h3>
+  <ul>
+    <li>🏖 ลากิจ:
+      <span class="highlight 
+        {% if summary['ลากิจ'] >= 10 %}danger
+        {% elif summary['ลากิจ'] >= 6 %}warning
+        {% else %}normal{% endif %}">
+        {{ summary['ลากิจ'] }}
+      </span>  วัน
+    </li>
+    <li>🤒 ลาป่วย:
+      <span class="highlight 
+        {% if summary['ลาป่วย'] >= 10 %}danger
+        {% elif summary['ลาป่วย'] >= 6 %}warning
+        {% else %}normal{% endif %}">
+        {{ summary['ลาป่วย'] }}
+      </span>  วัน
+    </li>
+    <li>🕐 ลาย่อย:
+      <span class="highlight 
+        {% if summary['ลาย่อย'] >= 10 %}danger
+        {% elif summary['ลาย่อย'] >= 6 %}warning
+        {% else %}normal{% endif %}">
+        {{ "%.1f"|format(summary['ลาย่อย']) }}
+      </span>  ชั่วโมง
+    </li>
+  </ul>
+  {% if notes %}
+    <div class="note-section" style="margin-top: 2em;">
+      <h3>📎 เอกสารบันทึกจากผู้บริหาร</h3>
+      <ul>
+        {% for note in notes %}
+          <li>
+            📄 <a href="{{ url_for('static', filename=note.filepath) }}" target="_blank">{{ note.filename }}</a>
+            <small style="color: gray;">(อัปโหลดเมื่อ {{ note.uploaded_at.strftime('%d/%m/%Y') }})</small>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+ 
+</div>
+
+
+
+
+<!-- 📄 Table -->
+<div class="table-container">
+  <table class="leave-table">
+    <thead>
+      <tr>
+        <th>👤 ผู้ใช้</th>
+        <th>📁 ประเภท</th>
+        <th>📅 วันที่ลา</th>
+        <th>📏 จำนวนวัน</th>
+        <th>✍️ เหตุผล</th>
+        <th>⏱ ชั่วโมง</th>
+        <th>🕰 เวลา</th>
+        <th>📨 วันที่ส่ง</th>
+        <th>📌 สถานะ</th>
+        <th>✏️แก้ไข / ยกเลิก</th>
+        <th>🖨 พิมพ์</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for leave in leaves %}
+      <tr>
+        <td>{{ leave.user.prefix }}{{ leave.user.first_name }} {{ leave.user.last_name }}</td>
+        <td>{{ leave.leave_type }}</td>
+        <td>
+          {% if leave.leave_type == 'ลาย่อย' and leave.date %}
+            {{ leave.date.strftime('%d/%m/%Y') }}
+          {% elif leave.start_date and leave.end_date %}
+            {{ leave.start_date.strftime('%d/%m/%Y') }} ถึง {{ leave.end_date.strftime('%d/%m/%Y') }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>{{ leave.leave_days }}</td>
+        <td>{{ leave.reason }}</td>
+        <td>
+          {% if leave.leave_type == 'ลาย่อย' %}
+            {{ leave.hours or '-' }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if leave.leave_type == 'ลาย่อย' %}
+            {{ leave.time_from }} - {{ leave.time_to }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>{{ leave.submitted_at.strftime('%d/%m/%Y %H:%M') if leave.submitted_at else '-' }}</td>
+        <td>
+          {% if leave.status == 'รออนุมัติ' %}
+            <span class="badge pending">รออนุมัติ</span>
+          {% elif leave.status == 'ไม่อนุมัติ' %}
+            <span class="badge rejected">ไม่อนุมัติ</span>
+          {% else %}
+            <span class="badge approved">อนุมัติแล้ว</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if leave.status == 'รออนุมัติ' %}
+            <a href="{{ url_for('edit_leave', leave_id=leave.id) }}" class="btn-blue">✏️ แก้ไข</a>
+            <form action="{{ url_for('cancel_leave', leave_id=leave.id) }}" method="POST" style="display:inline;">
+              <button type="submit" class="btn-red" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกใบลานี้?')">❌ ยกเลิก</button>
+            </form>
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if leave.leave_type != 'ลาย่อย' and leave.status == 'อนุมัติ' %}
+            <a href="{{ url_for('print_leave_form', leave_id=leave.id) }}" class="btn-blue">🖨</a>
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="10" class="no-data">ไม่มีข้อมูลการลาในช่วงเวลานี้</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- 🎨 Style -->
+<style>
+  .report-title {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-box {
+    margin-bottom: 1.5rem;
+    background: #f7faff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .filter-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .summary-box {
+    background: #e9f6ff;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0 2rem;
+    border-left: 6px solid #007BFF;
+    border-radius: 8px;
+  }
+
+  .summary-box h3 {
+    margin-bottom: 0.5rem;
+    color: #007BFF;
+  }
+
+  .summary-box ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .summary-box li {
+    margin: 0.5rem 0;
+    font-size: 1.05rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  }
+
+  .leave-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .leave-table th, .leave-table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .leave-table thead {
+    background: #f0f4f8;
+    font-weight: bold;
+  }
+
+  .no-data {
+    text-align: center;
+    font-style: italic;
+    color: #888;
+  }
+
+  .btn-blue {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.95rem;
+  }
+
+  .btn-blue:hover {
+    background-color: #0056b3;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.35em 0.75em;
+    font-size: 0.85em;
+    border-radius: 8px;
+    font-weight: bold;
+  }
+
+  .badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .badge.approved {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  .badge.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+
+.highlight {
+  font-weight: bold;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: white;
+  display: inline-block;
+}
+
+.highlight.normal {
+  background-color: #28a745; /* เขียว */
+}
+
+.highlight.warning {
+  background-color: #ffc107; /* ส้ม */
+  color: #333;
+}
+
+.highlight.danger {
+  background-color: #dc3545; /* แดง */
+}
+
+</style>
+{% endblock %}
