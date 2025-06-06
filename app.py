@@ -20,7 +20,7 @@ from sqlalchemy.orm import joinedload  # เพิ่มด้านบน
 from sqlalchemy.orm import relationship
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"
+app.secret_key = os.environ.get('SECRET_KEY', 'your_default_secret_key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leave.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
