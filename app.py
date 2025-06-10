@@ -21,7 +21,7 @@ from sqlalchemy.orm import relationship
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'a1b2c3randomstringxyz')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leave.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
