@@ -36,6 +36,8 @@
   </div>
 
   <button type="submit" class="btn-blue" style="width: 100%;">💾 บันทึกข้อมูล</button>
+  <a href="{{ url_for('change_password_self') }}" class="btn-yellow">🔑 เปลี่ยนรหัสผ่าน</a>
+
 </form>
 
 <style>
@@ -68,5 +70,22 @@
   .btn-blue:hover {
     background-color: #0056b3;
   }
+
+  .btn-yellow {
+  display: block;
+  text-align: center;
+  background-color: #FFC107;
+  color: #333;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  margin-top: 1rem;
+  text-decoration: none;
+  } 
+
+  .btn-yellow:hover {
+  background-color: #e0a800;
+  }
+
 </style>
 {% endblock %}

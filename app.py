@@ -727,6 +727,35 @@ def change_password(user_id):
     flash(f"เปลี่ยนรหัสผ่านของ {user.username} เรียบร้อยแล้ว")
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/change_password_self', methods=['GET', 'POST'])
+@login_required
+def change_password_self():
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if not check_password_hash(current_user.password, current_password):
+            flash('รหัสผ่านเดิมไม่ถูกต้อง', 'danger')
+            return redirect(url_for('change_password_self'))
+
+        if new_password != confirm_password:
+            flash('รหัสผ่านใหม่ไม่ตรงกัน', 'danger')
+            return redirect(url_for('change_password_self'))
+
+        if len(new_password) < 4:
+            flash('รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร', 'danger')
+            return redirect(url_for('change_password_self'))
+
+        current_user.password = generate_password_hash(new_password)
+        db.session.commit()
+
+        flash('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว', 'success')
+        return redirect(url_for('profile'))
+
+    return render_template('change_password_self.html')
+
+
 @app.route('/change_role/<int:user_id>', methods=['POST'])
 @login_required
 def change_role(user_id):
