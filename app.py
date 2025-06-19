@@ -19,7 +19,7 @@ import pandas as pd
 from sqlalchemy.orm import joinedload  # เพิ่มด้านบน
 from sqlalchemy.orm import relationship
 from flask_migrate import Migrate
-from dotenv import load_dotenv
+
 
 
 app = Flask(__name__)
@@ -34,6 +34,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
 
 
 
