@@ -18,14 +18,22 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 from sqlalchemy.orm import joinedload  # เพิ่มด้านบน
 from sqlalchemy.orm import relationship
+from flask_migrate import Migrate
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'a1b2c3randomstringxyz')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    "DATABASE_URL",
+    "postgresql://leave_user:r2gFAEfxP9e6NGFmgpyUS3uUdjagQwtv@dpg-d13p44q4d50c73e6ld40-a.singapore-postgres.render.com/leave_app_db_8p5d"
+)
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
+migrate = Migrate(app, db)
 
 
 
@@ -63,6 +71,7 @@ class LeaveRequest(db.Model):
     status = db.Column(db.String(20), default='รออนุมัติ') 
     contact_info = db.Column(db.String(255), nullable=True)
     user = relationship('User', backref='leaves')
+    approved_by = db.Column(db.String(80), nullable=True)  # username ของผู้อนุมัติ
     
 class UserNote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -201,7 +210,7 @@ def print_leave_form(leave_id):
 
     total_with_current = total_before + (leave_days or 0)
     
-    approver = User.query.filter_by(role='admin').first()  # หรือใช้ข้อมูลจากระบบ track ผู้อนุมัติจริงถ้ามี
+    approver = User.query.filter_by(username=leave.approved_by).first() if leave.approved_by else None
     approval_date = leave.submitted_at.strftime('%d/%m/%Y') if leave.status == 'อนุมัติ' else '-'
     
     if leave.status == 'อนุมัติ' and approver:
@@ -469,6 +478,7 @@ def approve_leave(leave_id):
         return redirect(url_for('admin_leaves'))
 
     leave.status = 'อนุมัติ'
+    leave.approved_by = current_user.username  # บันทึกผู้ที่อนุมัติจริง
     db.session.commit()
     flash("อนุมัติใบลาเรียบร้อยแล้ว")
     return redirect(url_for('admin_leaves'))
