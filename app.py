@@ -452,17 +452,20 @@ def admin_leaves():
     if current_user.role != 'admin':
         return "คุณไม่มีสิทธิ์เข้าถึงหน้านี้", 403
 
-    # ผู้อำนวยการและผู้รับใบอนุญาตเห็นทุกใบลา
-    if current_user.position in ['ผู้อำนวยการ', 'ผู้รับใบอนุญาต', 'ผู้จัดการทั่วไป']:
-        leaves = LeaveRequest.query.join(User, LeaveRequest.username == User.username) \
-            .order_by(LeaveRequest.submitted_at.desc()).all()
-    else:
-        # หัวหน้าแผนกเห็นเฉพาะใบลาของแผนกเดียวกัน
-        leaves = LeaveRequest.query.join(User, LeaveRequest.username == User.username) \
-            .filter(User.department == current_user.department) \
-            .order_by(LeaveRequest.submitted_at.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 20  # ✅ แสดง 20 รายการต่อหน้า
 
-    return render_template('admin_leaves.html', leaves=leaves)
+    query = LeaveRequest.query.join(User, LeaveRequest.username == User.username)
+
+    if current_user.position not in ['ผู้อำนวยการ', 'ผู้รับใบอนุญาต', 'ผู้จัดการทั่วไป']:
+        query = query.filter(User.department == current_user.department)
+
+    query = query.order_by(LeaveRequest.submitted_at.desc())
+
+    pagination = query.paginate(page=page, per_page=per_page)
+    leaves = pagination.items
+
+    return render_template('admin_leaves.html', leaves=leaves, pagination=pagination)
 
 
 @app.route('/admin/leaves/<int:leave_id>/approve', methods=['POST'])
@@ -474,7 +477,7 @@ def approve_leave(leave_id):
     if current_user.role != 'admin':
         return "คุณไม่มีสิทธิ์เข้าถึงหน้านี้", 403
 
-    if current_user.position not in ['ผู้อำนวยการ', 'ผู้รับใบอนุญาต'] and user.department != current_user.department:
+    if current_user.position not in ['ผู้อำนวยการ', 'ผู้รับใบอนุญาต', 'ผู้จัดการทั่วไป'] and user.department != current_user.department:
         flash("คุณสามารถอนุมัติได้เฉพาะใบลาของแผนกเดียวกันเท่านั้น")
         return redirect(url_for('admin_leaves'))
 
